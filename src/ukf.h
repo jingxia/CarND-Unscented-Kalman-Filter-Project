@@ -11,7 +11,7 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
 class UKF {
-public:
+private:
 
   ///* initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
@@ -67,6 +67,49 @@ public:
   ///* Sigma point spreading parameter
   double lambda_;
 
+  // Augmented Sigma Points
+  MatrixXd Xsig_aug_;
+
+  /**
+   * Prediction Predicts sigma points, the state, and the state covariance
+   * matrix
+   * @param delta_t Time between k and k+1 in s
+   */
+  void Prediction(double delta_t);
+
+  /**
+   * Updates the state and the state covariance matrix using a laser measurement
+   * @param meas_package The measurement at k+1
+   */
+  void UpdateLidar(const MeasurementPackage& meas_package);
+
+  /**
+   * Updates the state and the state covariance matrix using a radar measurement
+   * @param meas_package The measurement at k+1
+   */
+  void UpdateRadar(const MeasurementPackage& meas_package);
+
+  /**
+   * Calculate Augmented Sigma points
+   */
+  void GenerateAugmentedSigmaPoints();
+
+  /**
+   * Calculate predicted mean
+   */
+  void CalculatePredicatedMeanCovariance();
+
+  /**
+   * Update the state and covariance matrix 
+   */
+  void Update(const VectorXd& z, const VectorXd& z_pred, const MatrixXd& S, const MatrixXd& Zsig);
+
+  /**
+   * Normalize the angle
+   */
+  void NormalizeAngle(double& angle);
+
+public:
 
   /**
    * Constructor
@@ -82,26 +125,13 @@ public:
    * ProcessMeasurement
    * @param meas_package The latest measurement data of either radar or laser
    */
-  void ProcessMeasurement(MeasurementPackage meas_package);
+  void ProcessMeasurement(const MeasurementPackage& meas_package);
 
-  /**
-   * Prediction Predicts sigma points, the state, and the state covariance
-   * matrix
-   * @param delta_t Time between k and k+1 in s
-   */
-  void Prediction(double delta_t);
+  const VectorXd& x() const;
 
-  /**
-   * Updates the state and the state covariance matrix using a laser measurement
-   * @param meas_package The measurement at k+1
-   */
-  void UpdateLidar(MeasurementPackage meas_package);
-
-  /**
-   * Updates the state and the state covariance matrix using a radar measurement
-   * @param meas_package The measurement at k+1
-   */
-  void UpdateRadar(MeasurementPackage meas_package);
 };
+
+inline
+const VectorXd& UKF::x() const {return x_;}
 
 #endif /* UKF_H */
